@@ -7,6 +7,8 @@ Raylib.SetTargetFPS(60);
 Char Character = new Char();
 Rectangle CharRect = new Rectangle(0, 200, 80, 80);
 bool walking = false;
+bool ObstacleAvoidance = false;
+Vector2 targetorig = new Vector2(0,0);
 double Deg2Rad = Math.PI/180;
 
 Camera2D camera;
@@ -33,7 +35,8 @@ walls.Add(new Rectangle(1400, 20, 150, 150));
 
 List<BoundingBox> Wallcollisions = new List<BoundingBox>();
 foreach(Rectangle wall in walls){
-Wallcollisions.Add(new BoundingBox(new Vector3(wall.x,wall.y,0), new Vector3(wall.x+wall.width,wall.y-wall.height,0)));
+Wallcollisions.Add(new BoundingBox(new Vector3(wall.x,wall.y,0), new Vector3(wall.x+wall.width,wall.y+wall.height,0)));
+
 }
 
 while (Raylib.WindowShouldClose() == false){
@@ -70,9 +73,15 @@ while (Raylib.WindowShouldClose() == false){
 
       foreach(BoundingBox wall in Wallcollisions){
       if (Raylib.GetRayCollisionBox(CharView, wall).hit == true){
-        Wallcollisions[0].GetType();
-        Console.WriteLine(Wallcollisions[0].GetType());
-
+        
+        double RayDistance = Math.Sqrt(Math.Pow(wall.max.X - CharRect.x, 2) + Math.Pow(wall.max.Y - CharRect.y, 2) );
+        if (RayDistance < 200){
+          if (ObstacleAvoidance == false){
+            targetorig = Target;
+            ObstacleAvoidance = true;
+          }
+            Target = new Vector2(wall.max.X+50, wall.max.Y);
+        }
       }  
       }
       
@@ -97,7 +106,7 @@ while (Raylib.WindowShouldClose() == false){
     else{
       walking = false;
     }
-  
+
   }
 //*****************************************************************************************************************************************************************  
 //Rendering
