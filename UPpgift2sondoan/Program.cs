@@ -1,4 +1,7 @@
-﻿using System.Numerics;
+﻿/// Notes for Myself
+/// A* patfinding. Ray cast
+//
+using System.Numerics;
 using Raylib_cs;
 
 Raylib.InitWindow(1080, 1080, "game");
@@ -16,7 +19,9 @@ camera.zoom = 0.5f;
 camera.rotation = 0;
 camera.offset = new Vector2(1080/2, 1080/2);
 bool debug = false;
-
+int CharXSpeed = 10;
+int CharYSpeed = 10;
+Vector2 CharDirection = new Vector2 (0,0);
 Vector2 Target = new Vector2 (0,0);
 Ray CharView = new Ray();
 
@@ -40,6 +45,8 @@ Wallcollisions.Add(new BoundingBox(new Vector3(wall.x,wall.y,0), new Vector3(wal
 
 }
 
+
+
 while (Raylib.WindowShouldClose() == false){
   float DeltaTime = Raylib.GetFrameTime();
 //Logic
@@ -56,6 +63,8 @@ while (Raylib.WindowShouldClose() == false){
       Target = new Vector2(WorldMousePos.X,WorldMousePos.Y);
       angle = Math.Atan2(ScreenCharPos.Y - mouseY, ScreenCharPos.X - mouseX) * (180 / Math.PI); // Ifall BegindMode2D inte är på Replace ScreenCharPos.X and Y with Character.x and y
       walking = true;
+      Vector2 diff = screenmousePos - characterPos;
+      CharDirection = Vector2.Normalize(diff);
     } 
     if (Raylib.IsKeyPressed(KeyboardKey.KEY_S)){
       walking = false;
@@ -89,7 +98,6 @@ while (Raylib.WindowShouldClose() == false){
 
       foreach(BoundingBox wall in Wallcollisions){
       if (Raylib.GetRayCollisionBox(CharView, wall).hit == true){
-        System.Console.WriteLine(angle);
         Vector2 p1 = new Vector2(wall.min.X,wall.min.Y); // top left
         Vector2 p2 = new Vector2(wall.max.X,wall.min.Y); // top right
         Vector2 p3 = new Vector2(wall.max.X,wall.max.Y); // bot right
@@ -102,52 +110,64 @@ while (Raylib.WindowShouldClose() == false){
         foreach (Vector2 point in p){
         double RayDistance = Math.Sqrt(Math.Pow(point.X - CharRect.x, 2) + Math.Pow(point.Y - CharRect.y, 2) );
         if (RayDistance < 80){
-          if (angle > 45 && angle < 135){
+            //check all distancces
             System.Console.WriteLine("up");
+            System.Console.WriteLine(point.X);
+            System.Console.WriteLine(wall.min.X);
+            if (point.X == wall.min.X && point.Y == wall.min.Y){
+              System.Console.WriteLine("botleft");
+            }
+
             Target = new Vector2(point.X+50, point.Y+50);
-          }
-          else if (angle >= -45 && angle <= 45){
-            Target = new Vector2(point.X+50, point.Y+50);
-            System.Console.WriteLine("left");
-          }
-          else if (angle <= -135 && angle <= 135){
-            Target = new Vector2(point.X-70, point.Y-70);
-            System.Console.WriteLine("right");
-          }
-          else if (angle >= -135 && angle <= -45){
-            Target = new Vector2(point.X+75, point.Y-50);
-            System.Console.WriteLine("down");
-          }
           if (ObstacleAvoidance == false){
             targetorig = Target;
             ObstacleAvoidance = true;
           }
           if (ObstacleAvoidance == true){
-            if (Distancce > 5){
-              System.Console.WriteLine("hello1e2");
+            if (Distancce > 5){ 
               Target = targetorig;
               ObstacleAvoidance = false;
             }
+          // else if (angle >= -45 && angle <= 45){
+          //   Target = new Vector2(point.X+50, point.Y+50);
+          //   System.Console.WriteLine("left");
+          // }
+          // else if (angle <= -135 && angle <= 135){
+          //   Target = new Vector2(point.X-70, point.Y-70);
+          //   System.Console.WriteLine("right");
+          // }
+          // else if (angle >= -135 && angle <= -45){
+          //   Target = new Vector2(point.X+75, point.Y-50);
+          //   System.Console.WriteLine("down");
+          // }
           }
         }
         }
       }  
       }
       
+      System.Console.WriteLine(characterPos);
+      // Movement / https://stackoverflow.com/a/49503918
+      double dx = Target.X - CharRect.x;
+      double dy = Target.Y - CharRect.y;
+      double Len = Math.Sqrt(dx*dx + dy*dy);
+      float normaldx  = Convert.ToSingle(dx / Len);
+      float normaldy = Convert.ToSingle( dy / Len);
+
       if (CharRect.x > Target.X){
-          CharRect.x -= 5;
+          CharRect.x += CharXSpeed * normaldx;
 
       }
       if (CharRect.x < Target.X){
-          CharRect.x += 5;
+          CharRect.x += CharXSpeed * normaldx;
 
       }
       if (CharRect.y > Target.Y){
-          CharRect.y -= 5;
+          CharRect.y += CharYSpeed * normaldy;
 
       }
       if (CharRect.y < Target.Y){
-          CharRect.y += 5;
+          CharRect.y += CharYSpeed * normaldy;
       
       }
     
