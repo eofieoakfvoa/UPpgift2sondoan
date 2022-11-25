@@ -36,6 +36,7 @@ List<Enemy> enemies = new List<Enemy>();
 enemies.Add(new Enemy());
 enemies.Add(new Enemy());
 enemies.Add(new Enemy());
+enemies.Add(new Enemy());
 enemies[1].rect.y = 200;
 enemies[2].rect.y = 400;
         Vector2 nextClosest = new Vector2(0,0);
@@ -45,6 +46,7 @@ List<Rectangle> walls = new List<Rectangle>();
 walls.Add(new Rectangle(20, 20, 150, 150));
 walls.Add(new Rectangle(700, 20, 150, 150));
 walls.Add(new Rectangle(1400, 20, 150, 150));
+walls.Add(new Rectangle(1550, 20, 150, 150));
 
 List<BoundingBox> Wallcollisions = new List<BoundingBox>();
 foreach(Rectangle wall in walls){
@@ -78,6 +80,7 @@ while (Raylib.WindowShouldClose() == false){
   Vector2 screenmousePos = new Vector2(mouseX, mouseY);
   Vector2 WorldMousePos = Raylib.GetScreenToWorld2D(screenmousePos, camera);
   Vector2 ScreenCharPos = Raylib.GetWorldToScreen2D(characterPos, camera);
+
 //keybinds
 
     if (Raylib.IsMouseButtonPressed(MouseButton.MOUSE_BUTTON_LEFT)){
@@ -107,9 +110,9 @@ while (Raylib.WindowShouldClose() == false){
 
 //Movement
   if (walking == true){
-    // System.Console.WriteLine(p.Count);
-    double Distancce = Math.Sqrt(Math.Pow(Target.X - CharRect.x, 2) + Math.Pow(Target.Y - CharRect.y, 2) );
-    if (Distancce > 5){
+    double CharTargDist = distanceCalc(Target,characterPos);
+    if (CharTargDist > 5){
+
       float angle1 = (float)Math.Sin(Deg2Rad * angle);
       float angle2 = (float)Math.Cos(Deg2Rad * angle);
       CharView.position = new Vector3(characterPos.X, characterPos.Y, 0);
@@ -122,6 +125,7 @@ while (Raylib.WindowShouldClose() == false){
       checkcollision.normal = new Vector3 (characterPos.X, characterPos.Y, 0);
       checkcollision.point = new Vector3 (characterPos.X, characterPos.Y, 0);
 
+
       foreach(BoundingBox wall in Wallcollisions){
       if (Raylib.GetRayCollisionBox(CharView, wall).hit == true){
         p.Add(new Vector2(wall.min.X,wall.min.Y)); // top left p[0]
@@ -129,8 +133,11 @@ while (Raylib.WindowShouldClose() == false){
         p.Add(new Vector2(wall.max.X,wall.max.Y)); // bot right p[2]
         p.Add(new Vector2(wall.min.X,wall.max.Y)); // bot left p[3]
         p.Add(new Vector2((wall.min.X + wall.max.X)/2,(wall.min.X + wall.max.X)/2 )); // center p[4]¨
+        
         Vector2 closest = p[0];
-        // find closest
+        Vector2 center = p[4];
+
+        // find closest point to player
         for (int i = 1; i < p.Count; i++)
         {
           if ((characterPos - p[i]).Length() < (characterPos - closest).Length())
@@ -140,11 +147,11 @@ while (Raylib.WindowShouldClose() == false){
         }
   
         double angle23 = Math.Atan2(closest.Y - p[4].Y, closest.X - p[4].X) * (180 / Math.PI);
-        Vector2 center = p[4];
-
-        double RayDistance = Math.Sqrt(Math.Pow(closest.X - CharRect.x, 2) + Math.Pow(closest.Y - CharRect.y, 2) );
 
 
+
+        double RayDistance = distanceCalc(closest, characterPos);
+        
         if (RayDistance < 80){
         if (debounce == false)
         {
@@ -152,74 +159,54 @@ while (Raylib.WindowShouldClose() == false){
         
 
         foreach (Vector2 point in p){
-        
-        double RayDistance2 = Math.Sqrt(Math.Pow(point.X - CharRect.x, 2) + Math.Pow(point.Y - CharRect.y, 2) );
-        if (RayDistance2 < 100){
+        double PointDistancce = distanceCalc(point,characterPos);
+
+        if (PointDistancce < 100){
         
         for (int i = 0; i < p.Count; i++)
         {
           int skip = (p.IndexOf(closest));
           int skip2 = (p.IndexOf(center));
-          if (i == skip2){
-            continue;
+          if (i == skip2 || i == skip){
+            break;
           }
 
            if (distanceCalc(characterPos, p[i]) + distanceCalc(p[i], Target) < distanceCalc(characterPos, nextClosest) + distanceCalc(nextClosest, Target))
           {
             nextClosest = p[i];
-            //  System.Console.WriteLine("p0 is" +  p[0]);
-            //  System.Console.WriteLine("p1 is" +  p[1]);
-            //  System.Console.WriteLine("p2 is" +  p[2]);
-            //  System.Console.WriteLine("p3 is" +  p[3]);
-        
           }
         }
         }
         }
+        //Make Target List
         if (listmade == false){
                   ObstacleAvoidance = true;
           targets.Add(new Vector2(closest.X, closest.Y));
           targets.Add(new Vector2(nextClosest.X, nextClosest.Y));
           targets.Add(new Vector2(targetorig.X, targetorig.Y));
-          System.Console.WriteLine(nextClosest);
         }
         }
         }
       }  
       }
+      //Movement To Target IF Obstacle
       if (ObstacleAvoidance == true){
         listmade = true;
-        System.Console.WriteLine(TargetIndex);
-        System.Console.WriteLine("target" + targets.Count);
           if (TargetIndex < targets.Count){
-            System.Console.WriteLine(TargetIndex);
           Target = targets[TargetIndex];
           if(distanceCalc(characterPos,Target) < 30){
             TargetIndex++;
           }
           }
           if (TargetIndex == targets.Count){
-            System.Console.WriteLine("hiwqif");
             TargetIndex = 0;
-            Target = targetorig;
             ObstacleAvoidance = false;
-            targets.Clear();
+            targets.Clear(); 
             walking = false;
             listmade = false;
           }
-        // for (var i = 0; i < targets.Count;)
-        // {
-        //   Target = targets[i];
-        //   if(distanceCalc(characterPos,Target) < 20){
-        //     i++;
-        //   }
-        //   else{
-        //   }
-        //   if (i == targets.Count){
-        //     Target = targetorig;
-        //     ObstacleAvoidance = false;
-        //   }
-        // }
+
+
       }
       // Movement / https://stackoverflow.com/a/49503918
       double dx = Target.X - CharRect.x;
@@ -251,9 +238,13 @@ while (Raylib.WindowShouldClose() == false){
     }
 
   }
+
+
+  
   
 //*****************************************************************************************************************************************************************  
 //Rendering
+
   Raylib.BeginDrawing();
   Raylib.ClearBackground(Color.WHITE);
   Raylib.BeginMode2D(camera);
