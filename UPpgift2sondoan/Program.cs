@@ -7,7 +7,7 @@ using System.Collections.Generic;
 Raylib.InitWindow(1080, 1080, "game");
 Raylib.SetTargetFPS(60);
         int TargetIndex = 0;
-        bool firstpoint = true;
+
 Char Character = new Char();
 Rectangle CharRect = new Rectangle(0, 200, 80, 80);
 bool walking = false;
@@ -29,7 +29,7 @@ Vector2 Target = new Vector2 (0,0);
 Ray CharView = new Ray();
 bool debounce = false;
 bool TargetReached = false;
-bool lastpoint = false;
+
 bool listmade = false;
 //lists
 List<Enemy> enemies = new List<Enemy>();
@@ -56,8 +56,7 @@ Wallcollisions.Add(new BoundingBox(new Vector3(wall.x,wall.y,0), new Vector3(wal
 
 //functions
 static double AngleCalc(Vector2 Origin, Vector2 comparison){
-    double angle = Math.Atan2(Origin.Y - comparison.Y, Origin.X - comparison.X) * (180 / Math.PI);
-    return angle;
+  return Math.Atan2(Origin.Y - comparison.Y, Origin.X - comparison.X) * (180 / Math.PI);
 }
 static double distanceCalc(Vector2 Origin, Vector2 comparison){
   return Math.Sqrt(Math.Pow(Origin.X - comparison.X, 2) + Math.Pow(Origin.Y - comparison.Y, 2) );
@@ -170,8 +169,7 @@ while (Raylib.WindowShouldClose() == false){
           if (i == skip2 || i == skip){
             break;
           }
-
-           if (distanceCalc(characterPos, p[i]) + distanceCalc(p[i], Target) < distanceCalc(characterPos, nextClosest) + distanceCalc(nextClosest, Target))
+           if (distanceCalc(characterPos, p[i]) + distanceCalc(p[i], Target) < distanceCalc(characterPos, nextClosest) +  distanceCalc(nextClosest, Target))
           {
             nextClosest = p[i];
           }
@@ -203,6 +201,7 @@ while (Raylib.WindowShouldClose() == false){
             ObstacleAvoidance = false;
             targets.Clear(); 
             walking = false;
+            debounce = false;
             listmade = false;
           }
 
@@ -232,12 +231,8 @@ while (Raylib.WindowShouldClose() == false){
       
       }
     }
-    else{
-      debounce = false;
-      firstpoint = true;
-    }
 
-  }
+    }
 
 
   
@@ -257,12 +252,11 @@ while (Raylib.WindowShouldClose() == false){
       Raylib.DrawBoundingBox(wall, Color.BLACK);
     }
     
-    Raylib.DrawTexturePro(Character.CharacterImage ,CharRect, CharRect, new Vector2(40,40), Convert.ToSingle(angle), Color.WHITE); // Origin är mitten av texturen, så en 80x80 bild har origin 40, 40
+    Raylib.DrawTexturePro(Character.CharacterImage ,new Rectangle(0,0, 80, 80), CharRect, new Vector2(40,40), Convert.ToSingle(angle), Color.WHITE); // Origin är mitten av texturen, så en 80x80 bild har origin 40, 40
  if (debug == true){
-    Raylib.DrawRay(CharView, Color.BLACK);
     Raylib.DrawRectangle((int)Target.X, (int)Target.Y, 10, 10, Color.BLACK);
     Raylib.DrawRectangle((int)targetorig.X, (int)targetorig.Y, 10, 10, Color.BLACK);
-
+    
  }
   Raylib.EndDrawing();
 }

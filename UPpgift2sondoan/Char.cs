@@ -3,7 +3,7 @@ using Raylib_cs;
 public class Character
 {
     public Rectangle rect = new Rectangle(100, 100, 80, 80);
-    public Texture2D CharacterImage = Raylib.LoadTexture("AvatarClose.png");
+    public Texture2D CharacterImage = Raylib.LoadTexture("TempCharFront.png");
     public int speed = 275;
 
 }
