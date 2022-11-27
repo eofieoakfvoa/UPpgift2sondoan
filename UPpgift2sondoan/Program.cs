@@ -1,6 +1,7 @@
 ﻿//
 // min code är inte cleaned den har bara alla mina ideer utan att tagit bort allt som inte fungera, kommer fixa
 //
+using System;
 using System.Numerics;
 using Raylib_cs;
 using System.Collections.Generic;
@@ -15,9 +16,11 @@ bool ObstacleAvoidance = false;
 Vector2 targetorig = new Vector2(0,0);
 double Deg2Rad = Math.PI/180;
 double angle = 0;
+double angle55 = 0;
 Camera2D camera;
 List<Vector2> p = new List<Vector2>();
         List<Vector2> targets = new();
+Ray PointView = new Ray();
 camera.zoom = 0.5f;
 camera.rotation = 0;
 camera.offset = new Vector2(1080/2, 1080/2);
@@ -29,6 +32,7 @@ Vector2 Target = new Vector2 (0,0);
 Ray CharView = new Ray();
 bool debounce = false;
 bool TargetReached = false;
+bool list3made = false;
 
 bool listmade = false;
 //lists
@@ -63,7 +67,6 @@ static double distanceCalc(Vector2 Origin, Vector2 comparison){
 }
 static void MovementClear(List<Vector2> p, bool debounce)
 {
-  p.Clear();
   debounce = false;
   
 }
@@ -87,9 +90,9 @@ while (Raylib.WindowShouldClose() == false){
       Target = targetorig;
       angle = Math.Atan2(ScreenCharPos.Y - mouseY, ScreenCharPos.X - mouseX) * (180 / Math.PI); // Ifall BegindMode2D inte är på Replace ScreenCharPos.X and Y with Character.x and y
       walking = true;
+      TargetReached = true;
       Vector2 diff = screenmousePos - characterPos;
       CharDirection = Vector2.Normalize(diff);
-      MovementClear(p, debounce);
     } 
 
     if (Raylib.IsKeyPressed(KeyboardKey.KEY_S)){
@@ -97,7 +100,6 @@ while (Raylib.WindowShouldClose() == false){
     }
 
     if (Raylib.IsKeyPressed(KeyboardKey.KEY_D)){
-      System.Console.WriteLine(debug);
       if (debug == false){
         debug = true;
       }
@@ -109,6 +111,15 @@ while (Raylib.WindowShouldClose() == false){
 
 //Movement
   if (walking == true){
+    if (TargetReached == true){
+            TargetReached = false;
+            TargetIndex = 0;
+            ObstacleAvoidance = false;
+            targets.Clear(); 
+            debounce = false;
+            listmade = false;
+            list3made = false;
+    }
     double CharTargDist = distanceCalc(Target,characterPos);
     if (CharTargDist > 5){
 
@@ -117,31 +128,31 @@ while (Raylib.WindowShouldClose() == false){
       CharView.position = new Vector3(characterPos.X, characterPos.Y, 0);
       CharView.direction = new Vector3(-angle2,-angle1,0);
       
-      //ray
-      RayCollision checkcollision = new RayCollision();   
-      checkcollision.hit = false;
-      checkcollision.distance = 10f;
-      checkcollision.normal = new Vector3 (characterPos.X, characterPos.Y, 0);
-      checkcollision.point = new Vector3 (characterPos.X, characterPos.Y, 0);
-
 
       foreach(BoundingBox wall in Wallcollisions){
       if (Raylib.GetRayCollisionBox(CharView, wall).hit == true){
+        if (list3made == false){
+        list3made = true;
         p.Add(new Vector2(wall.min.X,wall.min.Y)); // top left p[0]
         p.Add(new Vector2(wall.max.X,wall.min.Y)); // top right p[1]
         p.Add(new Vector2(wall.max.X,wall.max.Y)); // bot right p[2]
         p.Add(new Vector2(wall.min.X,wall.max.Y)); // bot left p[3]
         p.Add(new Vector2((wall.min.X + wall.max.X)/2,(wall.min.X + wall.max.X)/2 )); // center p[4]¨
+      }
         
         Vector2 closest = p[0];
         Vector2 center = p[4];
-
         // find closest point to player
         for (int i = 1; i < p.Count; i++)
         {
+          int skip2 = (p.IndexOf(center));
+          if (i == skip2){
+            continue;
+          }
           if ((characterPos - p[i]).Length() < (characterPos - closest).Length())
           {
             closest = p[i];
+            if (i == p.Count){}
           }
         }
   
@@ -167,18 +178,29 @@ while (Raylib.WindowShouldClose() == false){
           int skip = (p.IndexOf(closest));
           int skip2 = (p.IndexOf(center));
           if (i == skip2 || i == skip){
-            break;
+            continue; 
           }
-           if (distanceCalc(characterPos, p[i]) + distanceCalc(p[i], Target) < distanceCalc(characterPos, nextClosest) +  distanceCalc(nextClosest, Target))
+          else{
+         angle55 = Math.Atan2(closest.Y - p[i].Y, closest.X - p[i].X);
+         float TargAngle1 = (float)Math.Sin(angle55); //x
+         float TargAngle2 = (float)Math.Cos(angle55); //y
+         PointView.position = new Vector3((float)(closest.X + angle55 * 20), (float)(closest.Y + angle55 * 20), 0);
+         PointView.direction = new Vector3(-TargAngle2,-TargAngle1,0);
+          if (Raylib.GetRayCollisionBox(PointView, wall).hit == true){
+            continue;
+          }
+
+           else if (distanceCalc(characterPos, p[i]) + distanceCalc(p[i], Target) < distanceCalc(characterPos, nextClosest) +  distanceCalc(nextClosest, Target))
           {
-            nextClosest = p[i];
+                nextClosest = p[i];
+          }
           }
         }
         }
         }
         //Make Target List
         if (listmade == false){
-                  ObstacleAvoidance = true;
+          ObstacleAvoidance = true;
           targets.Add(new Vector2(closest.X, closest.Y));
           targets.Add(new Vector2(nextClosest.X, nextClosest.Y));
           targets.Add(new Vector2(targetorig.X, targetorig.Y));
@@ -188,6 +210,8 @@ while (Raylib.WindowShouldClose() == false){
       }  
       }
       //Movement To Target IF Obstacle
+      if (debounce == true){
+      }
       if (ObstacleAvoidance == true){
         listmade = true;
           if (TargetIndex < targets.Count){
@@ -197,12 +221,8 @@ while (Raylib.WindowShouldClose() == false){
           }
           }
           if (TargetIndex == targets.Count){
-            TargetIndex = 0;
-            ObstacleAvoidance = false;
-            targets.Clear(); 
             walking = false;
-            debounce = false;
-            listmade = false;
+            TargetReached = true;
           }
 
 
@@ -254,12 +274,13 @@ while (Raylib.WindowShouldClose() == false){
     
     Raylib.DrawTexturePro(Character.CharacterImage ,new Rectangle(0,0, 80, 80), CharRect, new Vector2(40,40), Convert.ToSingle(angle), Color.WHITE); // Origin är mitten av texturen, så en 80x80 bild har origin 40, 40
  if (debug == true){
+    Raylib.DrawRay(CharView, Color.BLACK);
+    Raylib.DrawRay(PointView, Color.BLACK);
     Raylib.DrawRectangle((int)Target.X, (int)Target.Y, 10, 10, Color.BLACK);
     Raylib.DrawRectangle((int)targetorig.X, (int)targetorig.Y, 10, 10, Color.BLACK);
+    Raylib.DrawRectangle((int)PointView.position.X,(int)(PointView.position.Y), 10, 10, Color.RED);
+    Raylib.DrawFPS(500,0);
     
  }
   Raylib.EndDrawing();
 }
-
-
-

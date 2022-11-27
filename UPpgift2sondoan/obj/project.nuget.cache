@@ -1,11 +1,15 @@
 {
   "version": 2,
-  "dgSpecHash": "dfEEelCWHi1dWWrlRQ5oOhfcCyie9prUL7mF7rQMyYNd0ZLhhT+z19gsxfYDPeJx+OrX896aCeVxd5aL8ZwH0A==",
+  "dgSpecHash": "7wCK8pR71J5fB9A3m914FEEFni47hGWRUwWD5zIgvcov7u7lIX0vdvEIaYGDGtOjhqczjPJmUBslwu2qtk76Dw==",
   "success": true,
   "projectFilePath": "C:\\Users\\richard.nilsson\\Desktop\\UPpgift2sondoan\\UPpgift2sondoan\\UPpgift2sondoan.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\richard.nilsson\\.nuget\\packages\\raylib-cs\\4.2.0.1\\raylib-cs.4.2.0.1.nupkg.sha512",
-    "C:\\Users\\richard.nilsson\\.nuget\\packages\\system.numerics.vectors\\4.5.0\\system.numerics.vectors.4.5.0.nupkg.sha512"
+    "C:\\Users\\richard.nilsson\\.nuget\\packages\\system.numerics.vectors\\4.5.0\\system.numerics.vectors.4.5.0.nupkg.sha512",
+    "C:\\Users\\richard.nilsson\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.11\\microsoft.netcore.app.ref.6.0.11.nupkg.sha512",
+    "C:\\Users\\richard.nilsson\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.11\\microsoft.windowsdesktop.app.ref.6.0.11.nupkg.sha512",
+    "C:\\Users\\richard.nilsson\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.11\\microsoft.aspnetcore.app.ref.6.0.11.nupkg.sha512",
+    "C:\\Users\\richard.nilsson\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\6.0.11\\microsoft.netcore.app.host.win-x64.6.0.11.nupkg.sha512"
   ],
   "logs": []
 }
