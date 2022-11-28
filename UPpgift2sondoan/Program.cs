@@ -5,7 +5,9 @@ using System;
 using System.Numerics;
 using Raylib_cs;
 using System.Collections.Generic;
-Raylib.InitWindow(1080, 1080, "game");
+int ScreenWidth = 1280;
+int ScreenHeight = 720;
+Raylib.InitWindow(ScreenWidth,ScreenHeight, "game");
 Raylib.SetTargetFPS(60);
 int TargetIndex = 0;
 
@@ -18,12 +20,10 @@ double Deg2Rad = Math.PI / 180;
 double angle = 0;
 double angle55 = 0;
 Camera2D camera;
-List<Vector2> p = new List<Vector2>();
-List<Vector2> targets = new();
 Ray PointView = new Ray();
 camera.zoom = 0.5f;
 camera.rotation = 0;
-camera.offset = new Vector2(1080 / 2, 1080 / 2);
+camera.offset = new Vector2(ScreenWidth / 2, ScreenHeight / 2);
 bool debug = false;
 int CharXSpeed = 10;
 int CharYSpeed = 10;
@@ -31,10 +31,10 @@ Vector2 CharDirection = new Vector2(0, 0);
 Vector2 Target = new Vector2(0, 0);
 Ray CharView = new Ray();
 bool debounce = false;
-bool TargetReached = false;
 bool list3made = false;
-
 bool listmade = false;
+int wallx = 0;
+int wally = 0;
 //lists
 List<Enemy> enemies = new List<Enemy>();
 enemies.Add(new Enemy());
@@ -44,15 +44,17 @@ enemies.Add(new Enemy());
 enemies[1].rect.y = 200;
 enemies[2].rect.y = 400;
 Vector2 nextClosest = new Vector2(0, 0);
-
-
 List<Rectangle> walls = new List<Rectangle>();
 walls.Add(new Rectangle(20, 20, 150, 150));
 walls.Add(new Rectangle(700, 20, 150, 150));
 walls.Add(new Rectangle(1400, 20, 150, 150));
 walls.Add(new Rectangle(1550, 20, 150, 150));
-
 List<BoundingBox> Wallcollisions = new List<BoundingBox>();
+List<Vector2> p = new List<Vector2>();
+List<Vector2> targets = new();
+
+
+
 foreach (Rectangle wall in walls)
 {
     Wallcollisions.Add(new BoundingBox(new Vector3(wall.x, wall.y, 0), new Vector3(wall.x + wall.width, wall.y + wall.height, 0)));
@@ -179,8 +181,6 @@ while (Raylib.WindowShouldClose() == false)
                             {
                                 double PointDistancce = distanceCalc(point, characterPos);
 
-                                if (PointDistancce < 100)
-                                {
 
                                     for (int i = 0; i < p.Count; i++)
                                     {
@@ -190,15 +190,24 @@ while (Raylib.WindowShouldClose() == false)
                                         {
                                             continue;
                                         }
-                                        angle55 = Math.Atan2(closest.Y - p[i].Y, closest.X - p[i].X);
+                                        else{
+
+                                        angle55 = Math.Atan2(closest.Y - p[i].Y, closest.X - p[i].X) * (180 / Math.PI);
+                                        double anglecenter = Math.Atan2(closest.Y - center.Y, closest.X - center.X) * (180 / Math.PI);
                                         System.Console.WriteLine(angle55);
-                                        float TargAngle1 = (float)Math.Sin(angle55); //x
-                                        float TargAngle2 = (float)Math.Cos(angle55); //y
-                                        PointView.position = new Vector3((float)(closest.X + angle55 * 20), (float)(closest.Y + angle55 * 20), 0);
+                                        float TargAngle1 = (float)Math.Sin(Deg2Rad * angle55); //y
+                                        float TargAngle2 = (float)Math.Cos(Deg2Rad *angle55); //x
+                                        float TargAnglecenter = (float)Math.Sin(Deg2Rad * anglecenter); //y
+                                        float TargAnglecenter2 = (float)Math.Cos(Deg2Rad * anglecenter); //x
+                                        PointView.position = new Vector3((closest.X+(TargAnglecenter2*40)), (int)(closest.Y+(TargAnglecenter*40)), 0);
                                         PointView.direction = new Vector3(-TargAngle2, -TargAngle1, 0);
                                         if (Raylib.GetRayCollisionBox(PointView, wall).hit == true)
                                         {
-                                          
+                                            System.Console.WriteLine(i);
+                                            System.Console.WriteLine("top left p[0]");
+                                            System.Console.WriteLine("top right p[1]");
+                                            System.Console.WriteLine("bot right p[2]");
+                                            System.Console.WriteLine("bot left p[3]");
                                             continue;
                                         }
 
@@ -206,7 +215,8 @@ while (Raylib.WindowShouldClose() == false)
                                         {
                                             nextClosest = p[i];
                                         }
-                                    }
+                                        }
+                                    
                                 }
                             }
                             //Make Target List
@@ -280,7 +290,8 @@ while (Raylib.WindowShouldClose() == false)
     }
 
 
-
+    wallx = (int)(0 + 60*Math.Cos(Deg2Rad * angle));
+    wally = (int)(0 + 60* Math.Sin(Deg2Rad * angle));
 
     //*****************************************************************************************************************************************************************  
     //Rendering
